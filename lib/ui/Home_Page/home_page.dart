@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import 'package:game_atm/models/game.dart';
+import 'package:game_atm/models/save.dart';
+import 'package:game_atm/ui/Game_Page/game_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Settings_Page/settings_page.dart';
@@ -53,6 +55,7 @@ class _HomePageState extends State<HomePage> {
                 case "Ayarlar":
                   Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => SettingsPage()));
+                  break;
               }
             },
           )
@@ -147,6 +150,10 @@ class _HomePageState extends State<HomePage> {
                             validator: (String value) {
                               if (value.length == 0)
                                 return "Lütfen Oyuncu adını giriniz";
+                              else if (value.contains("-") ||
+                                  value.contains("é") ||
+                                  value.contains(","))
+                                return "Oyuncu adı '-', 'é' veya ',' içeremez";
                               return null;
                             },
                             onSaved: (String value) =>
@@ -226,6 +233,37 @@ class _HomePageState extends State<HomePage> {
                   )
                 ],
               ),
+            ),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: Colors.black,
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(10, 30, 0, 0),
+              child: Text(
+                "Önceki Oyunu Yükle",
+                style:
+                    TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10, 20, 0, 0),
+                    child: TextButton(
+                      child: Text("Önceki Oyunu Yükle"),
+                      onPressed: () async {
+                        await loadLastGame();
+                      },
+                    ),
+                  )
+                ],
+              ),
             )
           ],
         ),
@@ -242,6 +280,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> olustur() async {
+    formKey.currentState.save();
     if (ayarlariKaydet) {
       final SharedPreferences prefs = await _prefs;
       prefs.setInt("oyuncuSayisi", oyuncuSayisi);
@@ -254,7 +293,16 @@ class _HomePageState extends State<HomePage> {
     game.oyuncuAdlariList = oyuncuAdlariList;
     game.baslangicParasi = baslangicParasi;
 
-    // Navigator.of(context).push(
-    //     MaterialPageRoute(builder: (context) => GamePage()));
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => GamePage()));
+  }
+
+  Future<void> loadLastGame() async {
+    final SharedPreferences prefs = await _prefs;
+    List<String> saveStringList;
+    try {
+      saveStringList = prefs.getStringList("saveStringList");
+      Save save = Save.fromString(saveStringList.last);
+    } catch (e) {}
   }
 }
