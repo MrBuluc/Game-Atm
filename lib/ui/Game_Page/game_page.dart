@@ -2,14 +2,20 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:game_atm/models/game.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:game_atm/models/player.dart';
 import 'package:game_atm/models/save.dart';
+import 'package:game_atm/ui/Saves_Page/saves_page.dart';
 import 'package:game_atm/ui/Settings_Page/settings_page.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class GamePage extends StatefulWidget {
+  final List<Player> playerList;
+  final int baslangicParasi;
+
+  GamePage({@required this.playerList, @required this.baslangicParasi});
+
   @override
   _GamePageState createState() => _GamePageState();
 }
@@ -25,18 +31,22 @@ class _GamePageState extends State<GamePage> {
 
   bool diceOpen = false, sesEffektiAcik;
 
-  int diceCount;
+  int diceCount, baslangicParasi;
 
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   AudioPlayer soundPlayer;
 
+  FToast fToast;
+
   @override
   void initState() {
     super.initState();
-    preparePlayerList();
+    playerList = widget.playerList;
+    //preparePlayerList();
     prepareSesEffektiAcik();
     if (sesEffektiAcik) soundPlayer = AudioPlayer();
+    baslangicParasi = widget.baslangicParasi;
   }
 
   @override
@@ -106,8 +116,8 @@ class _GamePageState extends State<GamePage> {
                       resetDialog(context);
                       break;
                     case "Load Game":
-                      // Navigator.of(context).push(
-                      //     MaterialPageRoute(builder: (context) => SavesPage()));
+                      Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => SavesPage()));
                       break;
                     case "Settings":
                       Navigator.of(context).push(MaterialPageRoute(
@@ -243,17 +253,6 @@ class _GamePageState extends State<GamePage> {
     );
   }
 
-  void preparePlayerList() {
-    Game game = Game();
-
-    for (int i = 1; i <= game.oyuncuSayisi; i++) {
-      Player player =
-          Player(name: game.oyuncuAdlariList[i], money: game.baslangicParasi);
-      playerList.add(player);
-      startingPlayerList.add(player);
-    }
-  }
-
   Future<void> prepareSesEffektiAcik() async {
     final SharedPreferences prefs = await _prefs;
     try {
@@ -261,6 +260,42 @@ class _GamePageState extends State<GamePage> {
     } catch (e) {
       sesEffektiAcik = true;
     }
+  }
+
+  Widget prepareToast(
+      int dialogType, String amount, String player1Name, String player2Name) {
+    String message;
+    switch (dialogType) {
+      case 0:
+        message = player1Name + "'in hesabından " + amount + " çıkarıldı";
+        break;
+      case 1:
+        message = player1Name + "'in hesabına " + amount + " eklendi";
+        break;
+      default:
+        message = player1Name +
+            " den " +
+            player2Name +
+            " ye " +
+            amount +
+            " aktarıldı";
+        break;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25), color: Colors.greenAccent),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check),
+          SizedBox(
+            width: 12,
+          ),
+          Text(message)
+        ],
+      ),
+    );
   }
 
   void diceDialog(BuildContext context) {
@@ -311,7 +346,7 @@ class _GamePageState extends State<GamePage> {
         "/" +
         suan.year.toString();
     String title = "Kaydedildi " + tarih;
-    Save save = Save(title, playerList);
+    Save save = Save(title, playerList, baslangicParasi);
     String saveString = save.toString();
 
     final SharedPreferences prefs = await _prefs;
@@ -352,7 +387,9 @@ class _GamePageState extends State<GamePage> {
                         child: Text("Tamam"),
                         onPressed: () {
                           setState(() {
-                            playerList = startingPlayerList.toList();
+                            for (Player player in playerList) {
+                              player.money = baslangicParasi;
+                            }
                           });
                           Navigator.pop(context);
                         },
@@ -445,6 +482,8 @@ class _GamePageState extends State<GamePage> {
                             addOrRemove(dialogType, player, amount);
                             if (sesEffektiAcik) soundPlayer.play();
                             Navigator.pop(context);
+                            showToast(dialogType, amount.toString(),
+                                player.name, null);
                           },
                         ),
                       ],
@@ -455,6 +494,14 @@ class _GamePageState extends State<GamePage> {
             ],
           );
         });
+  }
+
+  showToast(
+      int dialogType, String amount, String player1Name, String player2Name) {
+    fToast.showToast(
+        child: prepareToast(dialogType, amount, player1Name, player2Name),
+        gravity: ToastGravity.CENTER,
+        toastDuration: Duration(seconds: 2));
   }
 
   void editQuickMoneyDialog(BuildContext context) {
@@ -602,6 +649,8 @@ class _GamePageState extends State<GamePage> {
                             });
                             soundPlayer.play();
                             Navigator.pop(context);
+                            showToast(2, amount1.toString(), player.name,
+                                choosenPlayer.name);
                           },
                         )
                       ],

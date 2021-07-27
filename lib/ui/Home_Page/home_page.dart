@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
-import 'package:game_atm/models/game.dart';
+import 'package:game_atm/models/player.dart';
 import 'package:game_atm/models/save.dart';
+import 'package:game_atm/services/validator.dart';
 import 'package:game_atm/ui/Game_Page/game_page.dart';
+import 'package:game_atm/ui/Saves_Page/saves_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Settings_Page/settings_page.dart';
@@ -13,9 +15,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool ayarlariKaydet;
+  bool ayarlariKaydet = true;
 
-  int oyuncuSayisi = 2, oyuncuSayisiBitis = 100, baslangicParasi;
+  int oyuncuSayisi = 2, oyuncuSayisiBitis = 101, baslangicParasi;
 
   List<int> oyuncuSayisiList;
   List<String> oyuncuAdlariList = List<String>.filled(100, "Null");
@@ -33,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
@@ -42,7 +45,7 @@ class _HomePageState extends State<HomePage> {
         ),
         actions: [
           PopupMenuButton(
-            color: Colors.black,
+            color: Colors.white,
             elevation: 20,
             itemBuilder: (context) => [
               PopupMenuItem(
@@ -76,11 +79,12 @@ class _HomePageState extends State<HomePage> {
                 "Yeni bir Oyun Ayarla",
                 style: TextStyle(
                     color: Theme.of(context).textTheme.headline1.color,
-                    fontWeight: FontWeight.w600),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 30),
               ),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
               child: Text(
                   "Oyuncu adlarını giriniz, başlangıç parasını seçiniz ve oluştura tıklayınız"),
             ),
@@ -121,82 +125,80 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            for (int i = 1; i < oyuncuSayisi; i++)
-              Form(
-                key: formKey,
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                          child: Text("Oyuncu $i"),
-                        ),
-                        Expanded(
-                            child: Padding(
-                          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                          child: TextFormField(
-                            initialValue: "Oyuncu $i",
-                            decoration: InputDecoration(
-                                border: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Theme.of(context).primaryColor,
-                                        width: 3),
-                                    borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(4.0),
-                                        topRight: Radius.circular(4.0)))),
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                            validator: (String value) {
-                              if (value.length == 0)
-                                return "Lütfen Oyuncu adını giriniz";
-                              else if (value.contains("-") ||
-                                  value.contains("é") ||
-                                  value.contains(","))
-                                return "Oyuncu adı '-', 'é' veya ',' içeremez";
-                              return null;
-                            },
-                            onSaved: (String value) =>
-                                oyuncuAdlariList[i] = value,
+            Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: oyuncuSayisi,
+                    shrinkWrap: true,
+                    itemBuilder: (context, i) {
+                      return Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            child: Text("Oyuncu ${i + 1}"),
                           ),
-                        )),
-                      ],
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
-                          child: Text("Başlangıç Parası"),
-                        ),
-                        Expanded(
-                            child: Padding(
-                          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                          child: TextFormField(
-                            keyboardType: TextInputType.numberWithOptions(),
-                            decoration: InputDecoration(
-                              hintText: "0",
-                              hintStyle: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w500),
-                              border: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                      color: Theme.of(context).primaryColor,
-                                      width: 3),
-                                  borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(4.0),
-                                      topRight: Radius.circular(4.0))),
+                          Expanded(
+                              child: Padding(
+                            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            child: TextFormField(
+                              initialValue: "Oyuncu ${i + 1}",
+                              decoration: InputDecoration(
+                                  border: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: Theme.of(context).primaryColor,
+                                          width: 3),
+                                      borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(4.0),
+                                          topRight: Radius.circular(4.0)))),
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                              validator: Validator.isimKontrol,
+                              onSaved: (String value) =>
+                                  oyuncuAdlariList[i] = value,
                             ),
-                            style: TextStyle(
+                          )),
+                        ],
+                      );
+                    },
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+                        child: Text("Başlangıç Parası"),
+                      ),
+                      Expanded(
+                          child: Padding(
+                        padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                        child: TextFormField(
+                          keyboardType: TextInputType.numberWithOptions(),
+                          decoration: InputDecoration(
+                            hintText: "0",
+                            hintStyle: TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.w500),
-                            onSaved: (String value) =>
-                                baslangicParasi = int.parse(value),
+                            border: UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Theme.of(context).primaryColor,
+                                    width: 3),
+                                borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(4.0),
+                                    topRight: Radius.circular(4.0))),
                           ),
-                        ))
-                      ],
-                    )
-                  ],
-                ),
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w500),
+                          onSaved: (String value) =>
+                              baslangicParasi = int.parse(value),
+                        ),
+                      ))
+                    ],
+                  )
+                ],
               ),
+            ),
             Padding(
               padding: EdgeInsets.fromLTRB(0, 0, 0, 30),
               child: Row(
@@ -255,10 +257,33 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Padding(
                     padding: EdgeInsets.fromLTRB(10, 20, 0, 0),
-                    child: TextButton(
-                      child: Text("Önceki Oyunu Yükle"),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          primary: Theme.of(context).primaryColor),
+                      child: Text(
+                        "Önceki Oyunu Yükle",
+                        style: TextStyle(color: Colors.white),
+                      ),
                       onPressed: () async {
                         await loadLastGame();
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          primary: Theme.of(context).primaryColor),
+                      child: Text(
+                        "Kaydedilmiş Oyunları Gör",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.normal),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => SavesPage()));
                       },
                     ),
                   )
@@ -288,13 +313,23 @@ class _HomePageState extends State<HomePage> {
       prefs.setInt("baslangicParasi", baslangicParasi);
     }
 
-    Game game = Game();
-    game.oyuncuSayisi = oyuncuSayisi;
-    game.oyuncuAdlariList = oyuncuAdlariList;
-    game.baslangicParasi = baslangicParasi;
+    List<Player> playerList = preparePlayerList();
 
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => GamePage()));
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => GamePage(
+              playerList: playerList,
+              baslangicParasi: baslangicParasi,
+            )));
+  }
+
+  List<Player> preparePlayerList() {
+    List<Player> playerList = List<Player>.empty(growable: true);
+
+    for (int i = 1; i <= oyuncuSayisi; i++) {
+      Player player = Player(name: oyuncuAdlariList[i], money: baslangicParasi);
+      playerList.add(player);
+    }
+    return playerList;
   }
 
   Future<void> loadLastGame() async {
@@ -303,6 +338,16 @@ class _HomePageState extends State<HomePage> {
     try {
       saveStringList = prefs.getStringList("saveStringList");
       Save save = Save.fromString(saveStringList.last);
-    } catch (e) {}
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => GamePage(
+                playerList: save.playerList,
+                baslangicParasi: save.baslangicParasi,
+              )));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Son kaydettiğiniz oyun bulunamamaktadır"),
+        duration: Duration(seconds: 2),
+      ));
+    }
   }
 }

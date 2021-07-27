@@ -21,7 +21,7 @@ class _SettingsPageState extends State<SettingsPage> {
         elevation: 4,
         title: Text(
           "Ayarlar",
-          style: TextStyle(color: Colors.white, fontSize: 18),
+          style: TextStyle(color: Colors.white, fontSize: 25),
         ),
       ),
       body: SafeArea(
@@ -32,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
               padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
               child: Row(
                 mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Padding(
                     padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -41,8 +41,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       style: TextStyle(fontSize: 20),
                     ),
                   ),
-                  Expanded(
-                      child: Switch(
+                  Switch(
                     value: sesEffektiAcik,
                     activeColor: Theme.of(context).primaryColor,
                     onChanged: (newValue) async {
@@ -52,7 +51,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         prefs.setBool("sesEffektiAcik", sesEffektiAcik);
                       });
                     },
-                  ))
+                  )
                 ],
               ),
             )
