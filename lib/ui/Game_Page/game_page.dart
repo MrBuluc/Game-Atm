@@ -27,7 +27,7 @@ class _GamePageState extends State<GamePage> {
   List<int> diceList = List.filled(6, 1);
   List<String> quickMoneyList = List<String>.empty(growable: true);
 
-  String dicePath = "assets/dice/";
+  String dicePath = 'assets/dice/';
 
   bool diceOpen = false, sesEffektiAcik;
 
@@ -39,13 +39,14 @@ class _GamePageState extends State<GamePage> {
 
   FToast fToast;
 
+  double width, height;
+
   @override
   void initState() {
     super.initState();
     playerList = widget.playerList;
     //preparePlayerList();
     prepareSesEffektiAcik();
-    if (sesEffektiAcik) soundPlayer = AudioPlayer();
     baslangicParasi = widget.baslangicParasi;
   }
 
@@ -57,6 +58,8 @@ class _GamePageState extends State<GamePage> {
 
   @override
   Widget build(BuildContext context) {
+    width = MediaQuery.of(context).size.width;
+    height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
@@ -68,8 +71,12 @@ class _GamePageState extends State<GamePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              TextButton(
-                child: Image.asset(setDicePath(6)),
+              IconButton(
+                icon: Image.asset(
+                  setDicePath(6),
+                  width: 100,
+                  height: 100,
+                ),
                 onPressed: () {
                   if (!diceOpen)
                     diceDialog(context);
@@ -133,120 +140,133 @@ class _GamePageState extends State<GamePage> {
       body: SafeArea(
         child: Stack(
           children: [
-            Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (Player player in playerList)
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
-                    child: Card(
-                      clipBehavior: Clip.antiAliasWithSaveLayer,
-                      color: Color(0xFFF5F5F5),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                            child: Text(
-                              player.name,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .headline1
-                                      .color,
-                                  fontSize: 18),
+            SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  for (Player player in playerList)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+                      child: Card(
+                        clipBehavior: Clip.antiAliasWithSaveLayer,
+                        color: Color(0xFFF5F5F5),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                              child: Text(
+                                player.name,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .headline1
+                                        .color,
+                                    fontSize: 18),
+                              ),
                             ),
-                          ),
-                          Divider(
-                            thickness: 2,
-                          ),
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
-                            child: Text(
-                              player.money.toString(),
-                              style: TextStyle(fontSize: 30),
+                            Divider(
+                              thickness: 2,
                             ),
-                          ),
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              TextButton(
-                                child: Text(
-                                  "Ekle",
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 18),
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+                              child: Text(
+                                player.money.toString(),
+                                style: TextStyle(fontSize: 30),
+                              ),
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                TextButton(
+                                  child: Text(
+                                    "Ekle",
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 18),
+                                  ),
+                                  onPressed: () async {
+                                    await prepareQuickMoneyList();
+                                    if (sesEffektiAcik)
+                                      await soundPlayer
+                                          .setAsset("assets/sound.mp3");
+                                    addOrRemoveDialog(context, player, 1);
+                                  },
                                 ),
-                                onPressed: () async {
-                                  await prepareQuickMoneyList();
-                                  if (sesEffektiAcik)
+                                TextButton(
+                                  child: Text(
+                                    "Çıkar",
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 18),
+                                  ),
+                                  onPressed: () async {
+                                    await prepareQuickMoneyList();
+                                    if (sesEffektiAcik)
+                                      await soundPlayer
+                                          .setAsset("assets/sound.mp3");
+                                    addOrRemoveDialog(context, player, 0);
+                                  },
+                                ),
+                                TextButton(
+                                  child: Text(
+                                    "Transfer",
+                                    style: TextStyle(
+                                        color: Colors.black, fontSize: 18),
+                                  ),
+                                  onPressed: () async {
                                     await soundPlayer
                                         .setAsset("assets/sound.mp3");
-                                  addOrRemoveDialog(context, player, 1);
-                                },
-                              ),
-                              TextButton(
-                                child: Text(
-                                  "Çıkar",
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 18),
+                                    transferDialog(context, player);
+                                  },
                                 ),
-                                onPressed: () async {
-                                  await prepareQuickMoneyList();
-                                  if (sesEffektiAcik)
-                                    await soundPlayer
-                                        .setAsset("assets/sound.mp3");
-                                  addOrRemoveDialog(context, player, 0);
-                                },
-                              ),
-                              TextButton(
-                                child: Text(
-                                  "Transfer",
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 18),
-                                ),
-                                onPressed: () async {
-                                  await soundPlayer
-                                      .setAsset("assets/sound.mp3");
-                                  transferDialog(context, player);
-                                },
-                              ),
-                            ],
-                          )
-                        ],
+                              ],
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                  )
-              ],
+                    )
+                ],
+              ),
             ),
             if (diceOpen)
-              Padding(
-                padding: EdgeInsets.fromLTRB(0, 580, 0, 0),
-                child: Container(
-                  width: double.infinity,
-                  height: 100,
-                  decoration: BoxDecoration(color: Color(0xFFE6E6E6)),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(30, 0, 0, 0),
+              Column(
+                children: [
+                  SizedBox(
+                    height: height * 0.73,
+                  ),
+                  Container(
+                    width: width,
+                    height: 100,
+                    decoration: BoxDecoration(color: Color(0xFFE6E6E6)),
                     child: Row(
-                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        for (int i = 0; i < diceCount; i++)
-                          TextButton(
-                            child: Image.asset(setDicePath(diceList[i])),
-                            onPressed: () {
-                              randomDice();
-                              setState(() {});
-                            },
-                          )
+                        ListView.builder(
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: diceCount,
+                          scrollDirection: Axis.horizontal,
+                          shrinkWrap: true,
+                          itemBuilder: (context, i) {
+                            return IconButton(
+                              icon: Image.asset(
+                                setDicePath(diceList[i]),
+                              ),
+                              iconSize: 50,
+                              onPressed: () {
+                                randomDice();
+                                setState(() {});
+                              },
+                            );
+                          },
+                        )
                       ],
                     ),
                   ),
-                ),
-              )
+                ],
+              ),
           ],
         ),
       ),
@@ -260,6 +280,8 @@ class _GamePageState extends State<GamePage> {
     } catch (e) {
       sesEffektiAcik = true;
     }
+
+    if (sesEffektiAcik) soundPlayer = AudioPlayer();
   }
 
   Widget prepareToast(
@@ -304,9 +326,14 @@ class _GamePageState extends State<GamePage> {
         builder: (context) {
           return SimpleDialog(
             title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  child: Image.asset(setDicePath(6)),
+                  child: Image.asset(
+                    setDicePath(6),
+                    width: 50,
+                    height: 50,
+                  ),
                 ),
                 Text("Kaç zar gerekli?")
               ],
@@ -316,13 +343,11 @@ class _GamePageState extends State<GamePage> {
                 ListTile(
                   title: Text(dice.toString()),
                   leading: Radio<int>(
-                    value: diceCount,
-                    groupValue: dice,
+                    value: dice,
+                    groupValue: 0,
                     onChanged: (int value) {
                       setState(() {
                         diceCount = value;
-                      });
-                      setState(() {
                         diceOpen = true;
                       });
                       Navigator.pop(context);
@@ -335,7 +360,7 @@ class _GamePageState extends State<GamePage> {
   }
 
   String setDicePath(int num) {
-    return dicePath + "dice" + num.toString() + ".png";
+    return dicePath + 'dice' + num.toString() + '.png';
   }
 
   Future<void> saveGame() async {

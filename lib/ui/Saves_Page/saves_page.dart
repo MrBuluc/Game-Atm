@@ -348,13 +348,14 @@ class _SavesPageState extends State<SavesPage> {
                               setState(() {
                                 saveList[index].title = saveTitle;
                               });
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(SnackBar(
+                                content: Text(
+                                    "Başlık $saveTitle olarak değiştirildi"),
+                                duration: Duration(seconds: 1),
+                              ));
                             }
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content:
-                                  Text("Başlık $saveTitle olarak değiştirildi"),
-                              duration: Duration(seconds: 1),
-                            ));
                           },
                         ),
                       ],
