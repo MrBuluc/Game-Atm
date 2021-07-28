@@ -74,7 +74,15 @@ class _SavesPageState extends State<SavesPage> {
                     onSelected: (value) {
                       switch (value) {
                         case "Delete":
-                          deleteAllDialog(context);
+                          if (saveList.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                  "Silinecek bir oyun kaydınız bulunmamaktadır"),
+                              duration: Duration(seconds: 2),
+                            ));
+                          } else {
+                            deleteAllDialog(context);
+                          }
                           break;
                       }
                     },
