@@ -15,16 +15,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool ayarlariKaydet = true;
-
-  int oyuncuSayisi = 2, oyuncuSayisiBitis = 101, baslangicParasi;
+  int oyuncuSayisi = 2, oyuncuSayisiBitis = 100, baslangicParasi;
 
   List<int> oyuncuSayisiList;
-  List<String> oyuncuAdlariList = List<String>.filled(100, "Null");
+  List<String> oyuncuAdlariList = List<String>.empty(growable: true);
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
+  double width, height;
+
+  TextStyle headLineTextStyle;
 
   @override
   void initState() {
@@ -34,6 +36,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    width = MediaQuery.of(context).size.width;
+    height = MediaQuery.of(context).size.height;
+    headLineTextStyle = TextStyle(
+        color: Theme.of(context).textTheme.headline1.color,
+        fontWeight: FontWeight.w600,
+        fontSize: 30);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -77,10 +85,7 @@ class _HomePageState extends State<HomePage> {
                 padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
                 child: Text(
                   "Yeni bir Oyun Ayarla",
-                  style: TextStyle(
-                      color: Theme.of(context).textTheme.headline1.color,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 30),
+                  style: headLineTextStyle,
                 ),
               ),
               Padding(
@@ -158,7 +163,7 @@ class _HomePageState extends State<HomePage> {
                                 style: TextStyle(fontWeight: FontWeight.w600),
                                 validator: Validator.isimKontrol,
                                 onSaved: (String value) =>
-                                    oyuncuAdlariList[i] = value,
+                                    oyuncuAdlariList.add(value),
                               ),
                             )),
                           ],
@@ -191,15 +196,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             style: TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.w500),
-                            validator: (String value) {
-                              if (value == null || value.length == 0) {
-                                return "Lütfen bir başlangıç parası girin";
-                              } else if (value.contains(",") ||
-                                  value.contains(".")) {
-                                return "Lütfen tam sayı giriniz";
-                              }
-                              return null;
-                            },
+                            validator: Validator.degerKontrol,
                             onSaved: (String value) =>
                                 baslangicParasi = int.parse(value),
                           ),
@@ -210,40 +207,21 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(0, 0, 0, 30),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
-                      child: Text("Mevcut ayarları kaydet"),
+                padding: EdgeInsets.fromLTRB(10, 30, 10, 30),
+                child: Container(
+                  width: width,
+                  height: 80,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        primary: Theme.of(context).primaryColor),
+                    child: Text(
+                      "Oluştur",
+                      style: TextStyle(color: Colors.white, fontSize: 30),
                     ),
-                    Expanded(
-                        child: Padding(
-                      padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                      child: Checkbox(
-                        value: ayarlariKaydet,
-                        activeColor: Theme.of(context).primaryColor,
-                        checkColor: Colors.white,
-                        onChanged: (newValue) =>
-                            setState(() => ayarlariKaydet = newValue),
-                      ),
-                    )),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(10, 20, 0, 0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            primary: Theme.of(context).primaryColor),
-                        child: Text(
-                          "Oluştur",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () {
-                          olustur();
-                        },
-                      ),
-                    )
-                  ],
+                    onPressed: () {
+                      olustur();
+                    },
+                  ),
                 ),
               ),
               Divider(
@@ -252,54 +230,47 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.black,
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(10, 30, 0, 0),
+                padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
                 child: Text(
                   "Önceki Oyunu Yükle",
-                  style: TextStyle(
-                      color: Colors.blue, fontWeight: FontWeight.w600),
+                  style: headLineTextStyle,
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(10, 20, 0, 0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            primary: Theme.of(context).primaryColor),
-                        child: Text(
-                          "Önceki Oyunu Yükle",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () async {
-                          await loadLastGame();
-                        },
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10, 20, 0, 0),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          primary: Theme.of(context).primaryColor),
+                      child: Text(
+                        "    Önceki\nOyunu Yükle",
+                        style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
+                      onPressed: () async {
+                        await loadLastGame();
+                      },
                     ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            primary: Theme.of(context).primaryColor),
-                        child: Text(
-                          "Kaydedilmiş Oyunları Gör",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal),
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => SavesPage()));
-                        },
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          primary: Theme.of(context).primaryColor),
+                      child: Text(
+                        "Kaydedilmiş\nOyunları Gör",
+                        style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
-                    )
-                  ],
-                ),
-              )
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => SavesPage()));
+                      },
+                    ),
+                  )
+                ],
+              ),
             ],
           ),
         ),
@@ -309,7 +280,7 @@ class _HomePageState extends State<HomePage> {
 
   List<int> oyuncuSayisiListOlustur() {
     List<int> list = List.empty(growable: true);
-    for (int i = oyuncuSayisi; i < oyuncuSayisiBitis; i++) {
+    for (int i = oyuncuSayisi; i <= oyuncuSayisiBitis; i++) {
       list.add(i);
     }
     return list;
@@ -318,12 +289,6 @@ class _HomePageState extends State<HomePage> {
   Future<void> olustur() async {
     if (formKey.currentState.validate()) {
       formKey.currentState.save();
-      if (ayarlariKaydet) {
-        final SharedPreferences prefs = await _prefs;
-        prefs.setInt("oyuncuSayisi", oyuncuSayisi);
-        prefs.setStringList("oyuncuAdlariList", oyuncuAdlariList);
-        prefs.setInt("baslangicParasi", baslangicParasi);
-      }
 
       List<Player> playerList = preparePlayerList();
 
@@ -332,14 +297,19 @@ class _HomePageState extends State<HomePage> {
                 playerList: playerList,
                 baslangicParasi: baslangicParasi,
               )));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Oyun Oluşturuldu"),
+        duration: Duration(seconds: 2),
+      ));
+      oyuncuAdlariList = List<String>.empty(growable: true);
     }
   }
 
   List<Player> preparePlayerList() {
     List<Player> playerList = List<Player>.empty(growable: true);
 
-    for (int i = 1; i <= oyuncuSayisi; i++) {
-      Player player = Player(name: oyuncuAdlariList[i], money: baslangicParasi);
+    for (String name in oyuncuAdlariList) {
+      Player player = Player(name: name, money: baslangicParasi);
       playerList.add(player);
     }
     return playerList;
@@ -347,16 +317,17 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> loadLastGame() async {
     final SharedPreferences prefs = await _prefs;
-    List<String> saveStringList;
-    try {
-      saveStringList = prefs.getStringList("saveStringList");
+    List<String> saveStringList = prefs.getStringList("saveStringList");
+
+    if (saveStringList != null) {
       Save save = Save.fromString(saveStringList.last);
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => GamePage(
                 playerList: save.playerList,
                 baslangicParasi: save.baslangicParasi,
+                index: saveStringList.length - 1,
               )));
-    } catch (e) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Son kaydettiğiniz oyun bulunamamaktadır"),
         duration: Duration(seconds: 2),

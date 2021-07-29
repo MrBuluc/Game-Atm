@@ -6,4 +6,13 @@ class Validator {
       return "Oyuncu adı '-', 'é' veya ',' içeremez";
     return null;
   }
+
+  static String degerKontrol(String value) {
+    if (value == null || value.length == 0) {
+      return "Lütfen bir para girin";
+    } else if (value.contains(",") || value.contains(".")) {
+      return "Lütfen tam sayı giriniz";
+    }
+    return null;
+  }
 }

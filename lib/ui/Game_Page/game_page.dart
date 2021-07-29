@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:game_atm/models/player.dart';
 import 'package:game_atm/models/save.dart';
+import 'package:game_atm/services/validator.dart';
 import 'package:game_atm/ui/Saves_Page/saves_page.dart';
 import 'package:game_atm/ui/Settings_Page/settings_page.dart';
 import 'package:just_audio/just_audio.dart';
@@ -12,20 +13,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class GamePage extends StatefulWidget {
   final List<Player> playerList;
-  final int baslangicParasi;
+  final int baslangicParasi, index;
 
-  GamePage({@required this.playerList, @required this.baslangicParasi});
+  GamePage(
+      {@required this.playerList, @required this.baslangicParasi, this.index});
 
   @override
   _GamePageState createState() => _GamePageState();
 }
 
 class _GamePageState extends State<GamePage> {
-  List<Player> playerList = List<Player>.empty(growable: true);
+  List<Player> playerList;
   List<Player> startingPlayerList = List.empty(growable: true);
   List<int> diceDialogList = [1, 2, 3, 4, 5, 6];
   List<int> diceList = List.filled(6, 1);
-  List<String> quickMoneyList = List<String>.empty(growable: true);
+  List<String> quickMoneyList;
 
   String dicePath = 'assets/dice/';
 
@@ -41,6 +43,11 @@ class _GamePageState extends State<GamePage> {
 
   double width, height;
 
+  TextStyle textButtonTextStyle;
+
+  EdgeInsets padding = EdgeInsets.only(left: 24, right: 24),
+      textFormFieldPadding = EdgeInsets.only(left: 10);
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +55,8 @@ class _GamePageState extends State<GamePage> {
     //preparePlayerList();
     prepareSesEffektiAcik();
     baslangicParasi = widget.baslangicParasi;
+    if (widget.index == null) saveGame();
+    fToast = FToast();
   }
 
   @override
@@ -60,6 +69,9 @@ class _GamePageState extends State<GamePage> {
   Widget build(BuildContext context) {
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
+    textButtonTextStyle =
+        TextStyle(color: Theme.of(context).primaryColor, fontSize: 18);
+    fToast.init(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
@@ -95,7 +107,7 @@ class _GamePageState extends State<GamePage> {
                 },
               ),
               PopupMenuButton(
-                color: Colors.black,
+                color: Colors.white,
                 itemBuilder: (context) => [
                   PopupMenuItem(
                     value: "New Game",
@@ -165,7 +177,8 @@ class _GamePageState extends State<GamePage> {
                                         .textTheme
                                         .headline1
                                         .color,
-                                    fontSize: 18),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700),
                               ),
                             ),
                             Divider(
@@ -190,9 +203,6 @@ class _GamePageState extends State<GamePage> {
                                   ),
                                   onPressed: () async {
                                     await prepareQuickMoneyList();
-                                    if (sesEffektiAcik)
-                                      await soundPlayer
-                                          .setAsset("assets/sound.mp3");
                                     addOrRemoveDialog(context, player, 1);
                                   },
                                 ),
@@ -204,9 +214,6 @@ class _GamePageState extends State<GamePage> {
                                   ),
                                   onPressed: () async {
                                     await prepareQuickMoneyList();
-                                    if (sesEffektiAcik)
-                                      await soundPlayer
-                                          .setAsset("assets/sound.mp3");
                                     addOrRemoveDialog(context, player, 0);
                                   },
                                 ),
@@ -217,8 +224,6 @@ class _GamePageState extends State<GamePage> {
                                         color: Colors.black, fontSize: 18),
                                   ),
                                   onPressed: () async {
-                                    await soundPlayer
-                                        .setAsset("assets/sound.mp3");
                                     transferDialog(context, player);
                                   },
                                 ),
@@ -235,11 +240,11 @@ class _GamePageState extends State<GamePage> {
               Column(
                 children: [
                   SizedBox(
-                    height: height * 0.73,
+                    height: height * 0.79,
                   ),
                   Container(
                     width: width,
-                    height: 100,
+                    height: 60,
                     decoration: BoxDecoration(color: Color(0xFFE6E6E6)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -275,49 +280,15 @@ class _GamePageState extends State<GamePage> {
 
   Future<void> prepareSesEffektiAcik() async {
     final SharedPreferences prefs = await _prefs;
-    try {
-      sesEffektiAcik = prefs.getBool("sesEffektiAcik");
-    } catch (e) {
+    sesEffektiAcik = prefs.getBool("sesEffektiAcik");
+    if (sesEffektiAcik == null) {
       sesEffektiAcik = true;
     }
 
-    if (sesEffektiAcik) soundPlayer = AudioPlayer();
-  }
-
-  Widget prepareToast(
-      int dialogType, String amount, String player1Name, String player2Name) {
-    String message;
-    switch (dialogType) {
-      case 0:
-        message = player1Name + "'in hesabından " + amount + " çıkarıldı";
-        break;
-      case 1:
-        message = player1Name + "'in hesabına " + amount + " eklendi";
-        break;
-      default:
-        message = player1Name +
-            " den " +
-            player2Name +
-            " ye " +
-            amount +
-            " aktarıldı";
-        break;
+    if (sesEffektiAcik) {
+      soundPlayer = AudioPlayer();
+      await soundPlayer.setAsset("assets/sound.mp3");
     }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25), color: Colors.greenAccent),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.check),
-          SizedBox(
-            width: 12,
-          ),
-          Text(message)
-        ],
-      ),
-    );
   }
 
   void diceDialog(BuildContext context) {
@@ -364,24 +335,32 @@ class _GamePageState extends State<GamePage> {
   }
 
   Future<void> saveGame() async {
-    DateTime suan = DateTime.now();
-    String tarih = suan.day.toString() +
-        "/" +
-        suan.month.toString() +
-        "/" +
-        suan.year.toString();
-    String title = "Kaydedildi " + tarih;
-    Save save = Save(title, playerList, baslangicParasi);
-    String saveString = save.toString();
-
+    int index = widget.index;
     final SharedPreferences prefs = await _prefs;
-    List<String> saveStringList;
-    try {
-      saveStringList = prefs.getStringList("saveStringList");
-    } catch (e) {
-      saveStringList = List.empty(growable: true);
+    List<String> saveStringList = prefs.getStringList("saveStringList");
+    if (saveStringList == null) {
+      saveStringList = List<String>.empty(growable: true);
     }
-    saveStringList.add(saveString);
+
+    if (index == null) {
+      DateTime suan = DateTime.now();
+      String tarih = suan.day.toString() +
+          "/" +
+          suan.month.toString() +
+          "/" +
+          suan.year.toString();
+      String title = "Kaydedildi " + tarih;
+      String saveString = Save(title, playerList, baslangicParasi).toString();
+
+      saveStringList.add(saveString);
+    } else {
+      Save oldSave = Save.fromString(saveStringList[index]);
+      String newSaveString =
+          Save(oldSave.title, playerList, baslangicParasi).toString();
+      saveStringList.removeAt(index);
+      saveStringList.insert(index, newSaveString);
+    }
+
     prefs.setStringList("saveStringList", saveStringList);
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -399,17 +378,30 @@ class _GamePageState extends State<GamePage> {
             children: [
               Column(
                 children: [
-                  Text("Bu durum oyunu başlangıça sıfırlayacak"),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 24, right: 24),
+                    child: Text(
+                      "Bu durum oyunu başlangıça sıfırlayacak",
+                      style: TextStyle(fontSize: 20),
+                    ),
+                  ),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
-                        child: Text("İptal"),
+                        child: Text(
+                          "İptal",
+                          style: textButtonTextStyle,
+                        ),
                         onPressed: () {
                           Navigator.pop(context);
                         },
                       ),
                       TextButton(
-                        child: Text("Tamam"),
+                        child: Text(
+                          "Tamam",
+                          style: textButtonTextStyle,
+                        ),
                         onPressed: () {
                           setState(() {
                             for (Player player in playerList) {
@@ -430,9 +422,9 @@ class _GamePageState extends State<GamePage> {
 
   Future<void> prepareQuickMoneyList() async {
     final SharedPreferences prefs = await _prefs;
-    try {
-      quickMoneyList = prefs.getStringList("quickMoneyList");
-    } catch (e) {
+    quickMoneyList = prefs.getStringList("quickMoneyList");
+    if (quickMoneyList == null) {
+      quickMoneyList = List<String>.empty(growable: true);
       quickMoneyList.add("100");
       quickMoneyList.add("200");
       quickMoneyList.add("500");
@@ -456,80 +448,127 @@ class _GamePageState extends State<GamePage> {
                 ? player.name + "'in hesabına para ekle"
                 : player.name + "'in hesabından para çıkar"),
             children: [
-              Form(
-                key: formKey,
-                child: Column(
-                  children: [
-                    Text(dialogType == 1
-                        ? player.name +
-                            "'in hesabına ne kadar para eklemek istiyorsun?"
-                        : player.name +
-                            "'in hesabından ne kadar para çıkarmak istiyorsun?"),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        hintText: dialogType == 1
-                            ? "Eklenecek"
-                            : "Çıkarılacak" + " miktarı girin",
-                      ),
-                      keyboardType: TextInputType.numberWithOptions(),
-                      onSaved: (String value) => amount = int.parse(value),
-                    ),
-                    Row(
-                      children: [
-                        for (String value in quickMoneyList)
-                          TextButton(
-                            child: Text(value),
-                            onPressed: () {
-                              addOrRemove(dialogType, player, int.parse(value));
-                              Navigator.pop(context);
-                            },
+              StatefulBuilder(
+                builder: (BuildContext context, StateSetter textButtonState) {
+                  return Form(
+                    key: formKey,
+                    child: Padding(
+                      padding: padding,
+                      child: Column(
+                        children: [
+                          Text(
+                            dialogType == 1
+                                ? player.name +
+                                    "'in hesabına ne kadar para eklemek istiyorsun?"
+                                : player.name +
+                                    "'in hesabından ne kadar para çıkarmak istiyorsun?",
+                            style: TextStyle(fontSize: 18),
                           ),
-                        TextButton(
-                          child: Icon(Icons.edit),
-                          onPressed: () {
-                            editQuickMoneyDialog(context);
-                          },
-                        )
-                      ],
+                          TextFormField(
+                            decoration: InputDecoration(
+                              hintText: dialogType == 1
+                                  ? "Eklenecek" + " miktarı girin"
+                                  : "Çıkarılacak" + " miktarı girin",
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: Validator.degerKontrol,
+                            onSaved: (String value) =>
+                                amount = int.parse(value),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              for (String value in quickMoneyList)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: GestureDetector(
+                                    child: Container(
+                                      color: Theme.of(context).primaryColor,
+                                      width: 50,
+                                      height: 50,
+                                      child: Center(
+                                        child: Text(
+                                          value,
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                    onTap: () async {
+                                      addOrRemove(
+                                          dialogType, player, int.parse(value));
+                                      Navigator.pop(context);
+                                      showToast(
+                                          dialogType, value, player.name, null);
+                                      if (sesEffektiAcik) {
+                                        soundPlayer.play();
+                                        await Future.delayed(
+                                            Duration(seconds: 2));
+                                        soundPlayer.stop();
+                                      }
+                                    },
+                                  ),
+                                ),
+                              TextButton(
+                                child: Icon(
+                                  Icons.edit,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  editQuickMoneyDialog(
+                                      context, textButtonState);
+                                },
+                              )
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                child: Text(
+                                  "İptal",
+                                  style: textButtonTextStyle,
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              TextButton(
+                                child: Text(
+                                  "Tamam",
+                                  style: textButtonTextStyle,
+                                ),
+                                onPressed: () async {
+                                  if (formKey.currentState.validate()) {
+                                    formKey.currentState.save();
+                                    addOrRemove(dialogType, player, amount);
+                                    Navigator.pop(context);
+                                    showToast(dialogType, amount.toString(),
+                                        player.name, null);
+                                    if (sesEffektiAcik) {
+                                      soundPlayer.play();
+                                      await Future.delayed(
+                                          Duration(seconds: 2));
+                                      soundPlayer.stop();
+                                    }
+                                  }
+                                },
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
                     ),
-                    Row(
-                      children: [
-                        TextButton(
-                          child: Text("İptal"),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                        TextButton(
-                          child: Text("Tamam"),
-                          onPressed: () {
-                            formKey.currentState.save();
-                            addOrRemove(dialogType, player, amount);
-                            if (sesEffektiAcik) soundPlayer.play();
-                            Navigator.pop(context);
-                            showToast(dialogType, amount.toString(),
-                                player.name, null);
-                          },
-                        ),
-                      ],
-                    )
-                  ],
-                ),
+                  );
+                },
               )
             ],
           );
         });
   }
 
-  showToast(
-      int dialogType, String amount, String player1Name, String player2Name) {
-    fToast.showToast(
-        child: prepareToast(dialogType, amount, player1Name, player2Name),
-        gravity: ToastGravity.CENTER,
-        toastDuration: Duration(seconds: 2));
-  }
-
-  void editQuickMoneyDialog(BuildContext context) {
+  void editQuickMoneyDialog(
+      BuildContext context, StateSetter textButtonState1) {
     GlobalKey<FormState> formKey1 = GlobalKey<FormState>();
 
     String qM0, qM1, qM2, qM3;
@@ -542,54 +581,71 @@ class _GamePageState extends State<GamePage> {
             children: [
               Form(
                 key: formKey1,
-                child: Column(
-                  children: [
-                    for (int i = 0; i < 4; i++)
-                      TextFormField(
-                        initialValue: quickMoneyList[i],
-                        keyboardType: TextInputType.numberWithOptions(),
-                        onSaved: (String value) {
-                          switch (i) {
-                            case 0:
-                              qM0 = value;
-                              break;
-                            case 1:
-                              qM1 = value;
-                              break;
-                            case 2:
-                              qM2 = value;
-                              break;
-                            case 3:
-                              qM3 = value;
-                              break;
-                          }
-                        },
-                      ),
-                    Row(
-                      children: [
-                        TextButton(
-                          child: Text("İptal"),
-                          onPressed: () {
-                            Navigator.pop(context);
+                child: Padding(
+                  padding: textFormFieldPadding,
+                  child: Column(
+                    children: [
+                      for (int i = 0; i < 4; i++)
+                        TextFormField(
+                          initialValue: quickMoneyList[i],
+                          keyboardType: TextInputType.numberWithOptions(),
+                          onSaved: (String value) {
+                            switch (i) {
+                              case 0:
+                                qM0 = value;
+                                break;
+                              case 1:
+                                qM1 = value;
+                                break;
+                              case 2:
+                                qM2 = value;
+                                break;
+                              case 3:
+                                qM3 = value;
+                                break;
+                            }
                           },
                         ),
-                        TextButton(
-                          child: Text("Kaydet"),
-                          onPressed: () async {
-                            formKey1.currentState.save();
-                            List<String> tmpQuickMoneyList = [
-                              qM0,
-                              qM1,
-                              qM2,
-                              qM3
-                            ];
-                            await saveQuickMoney(tmpQuickMoneyList);
-                            Navigator.pop(context);
-                          },
-                        )
-                      ],
-                    )
-                  ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            child: Text(
+                              "İptal",
+                              style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: 20),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                          TextButton(
+                            child: Text(
+                              "Kaydet",
+                              style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: 20),
+                            ),
+                            onPressed: () async {
+                              formKey1.currentState.save();
+                              List<String> tmpQuickMoneyList = [
+                                qM0,
+                                qM1,
+                                qM2,
+                                qM3
+                              ];
+                              await saveQuickMoney(tmpQuickMoneyList);
+                              Navigator.pop(context);
+                              textButtonState1(() {
+                                quickMoneyList = tmpQuickMoneyList;
+                              });
+                            },
+                          )
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               )
             ],
@@ -625,7 +681,7 @@ class _GamePageState extends State<GamePage> {
     List<Player> tmpPLayerList = playerList.toList();
     tmpPLayerList.remove(player);
 
-    Player choosenPlayer;
+    Player choosenPlayer = tmpPLayerList[0];
 
     showDialog(
         context: context,
@@ -633,55 +689,80 @@ class _GamePageState extends State<GamePage> {
           return SimpleDialog(
             title: Text("Para Transferi " + player.name + "'den:"),
             children: [
-              Form(
-                key: formKey2,
-                child: Column(
-                  children: [
-                    for (Player player1 in tmpPLayerList)
-                      ListTile(
-                        title: Text(player1.name),
-                        leading: Radio<Player>(
-                          value: choosenPlayer,
-                          groupValue: player1,
-                          onChanged: (Player player2) {
-                            setState(() {
-                              choosenPlayer = player2;
-                            });
-                          },
-                        ),
-                      ),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        hintText: "Transfer edilecek miktarı girin",
-                      ),
-                      keyboardType: TextInputType.numberWithOptions(),
-                      onSaved: (String value) => amount1 = int.parse(value),
-                    ),
-                    Row(
+              StatefulBuilder(
+                builder: (BuildContext context, StateSetter radioState) {
+                  return Form(
+                    key: formKey2,
+                    child: Column(
                       children: [
-                        TextButton(
-                          child: Text("İptal"),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                        for (Player player1 in tmpPLayerList)
+                          ListTile(
+                            title: Text(
+                              player1.name,
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            leading: Radio<Player>(
+                              value: player1,
+                              groupValue: choosenPlayer,
+                              onChanged: (Player player2) {
+                                radioState(() {
+                                  choosenPlayer = player2;
+                                });
+                              },
+                            ),
+                          ),
+                        Padding(
+                          padding: textFormFieldPadding,
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              hintText: "Transfer edilecek miktarı girin",
+                            ),
+                            keyboardType: TextInputType.numberWithOptions(),
+                            validator: Validator.degerKontrol,
+                            onSaved: (String value) =>
+                                amount1 = int.parse(value),
+                          ),
                         ),
-                        TextButton(
-                          child: Text("Tamam"),
-                          onPressed: () {
-                            formKey2.currentState.save();
-                            setState(() {
-                              player.transfer(choosenPlayer, amount1);
-                            });
-                            soundPlayer.play();
-                            Navigator.pop(context);
-                            showToast(2, amount1.toString(), player.name,
-                                choosenPlayer.name);
-                          },
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              child: Text(
+                                "İptal",
+                                style: textButtonTextStyle,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                            TextButton(
+                              child: Text(
+                                "Tamam",
+                                style: textButtonTextStyle,
+                              ),
+                              onPressed: () async {
+                                if (formKey2.currentState.validate()) {
+                                  formKey2.currentState.save();
+                                  setState(() {
+                                    player.transfer(choosenPlayer, amount1);
+                                  });
+                                  Navigator.pop(context);
+                                  showToast(2, amount1.toString(), player.name,
+                                      choosenPlayer.name);
+                                  if (sesEffektiAcik) {
+                                    soundPlayer.play();
+                                    await Future.delayed(Duration(seconds: 2));
+                                    soundPlayer.stop();
+                                  }
+                                }
+                              },
+                            )
+                          ],
                         )
                       ],
-                    )
-                  ],
-                ),
+                    ),
+                  );
+                },
               )
             ],
           );
@@ -694,5 +775,40 @@ class _GamePageState extends State<GamePage> {
       int ranNum = random.nextInt(6) + 1;
       diceList[i] = ranNum;
     }
+  }
+
+  showToast(
+      int dialogType, String amount, String player1Name, String player2Name) {
+    fToast.showToast(
+        child: prepareToast(dialogType, amount, player1Name, player2Name),
+        gravity: ToastGravity.CENTER,
+        toastDuration: Duration(seconds: 2));
+  }
+
+  Widget prepareToast(
+      int dialogType, String amount, String player1Name, String player2Name) {
+    String message;
+    switch (dialogType) {
+      case 0:
+        message = player1Name + "'in hesabından " + amount + " çıkarıldı";
+        break;
+      case 1:
+        message = player1Name + "'in hesabına " + amount + " eklendi";
+        break;
+      default:
+        message = player1Name +
+            " den " +
+            player2Name +
+            " ye " +
+            amount +
+            " aktarıldı";
+        break;
+    }
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            color: Colors.grey.shade300),
+        child: Text(message));
   }
 }

@@ -28,69 +28,75 @@ class _SavesPageState extends State<SavesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return saveList.isEmpty
-        ? Column(
-            children: [
-              Text("Herhangibir kaydedilmiş oyununuz bulunmamaktadır!!!\n"
-                  "Yeni bir oyun oluşturmayı deneyin."),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    primary: Theme.of(context).primaryColor),
-                child: Text(
-                  "Yeni Oyun",
-                  style: TextStyle(color: Colors.white),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          )
-        : WillPopScope(
-            onWillPop: () async {
-              updateSaveStringList();
-              return true;
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                backgroundColor: Theme.of(context).primaryColor,
-                automaticallyImplyLeading: true,
-                centerTitle: false,
-                elevation: 4,
-                title: Text(
-                  "Oyun Yükle",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-                actions: [
-                  PopupMenuButton(
-                    color: Colors.black,
-                    elevation: 20,
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: "Delete",
-                        child: Text("Hepsini sil"),
-                      )
+    return WillPopScope(
+      onWillPop: () async {
+        updateSaveStringList();
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).primaryColor,
+          automaticallyImplyLeading: true,
+          centerTitle: false,
+          elevation: 4,
+          title: Text(
+            "Oyun Yükle",
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+          actions: [
+            PopupMenuButton(
+              color: Colors.black,
+              elevation: 20,
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: "Delete",
+                  child: Text("Hepsini sil"),
+                )
+              ],
+              onSelected: (value) {
+                switch (value) {
+                  case "Delete":
+                    if (saveList.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content:
+                            Text("Silinecek bir oyun kaydınız bulunmamaktadır"),
+                        duration: Duration(seconds: 2),
+                      ));
+                    } else {
+                      deleteAllDialog(context);
+                    }
+                    break;
+                }
+              },
+            )
+          ],
+        ),
+        body: SafeArea(
+          child: saveList.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 10),
+                  child: Column(
+                    children: [
+                      Text(
+                        "Herhangi bir kaydedilmiş oyununuz bulunmamaktadır!!!\n"
+                        "Yeni bir oyun oluşturmayı deneyin.",
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            primary: Theme.of(context).primaryColor),
+                        child: Text(
+                          "Yeni Oyun",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
                     ],
-                    onSelected: (value) {
-                      switch (value) {
-                        case "Delete":
-                          if (saveList.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  "Silinecek bir oyun kaydınız bulunmamaktadır"),
-                              duration: Duration(seconds: 2),
-                            ));
-                          } else {
-                            deleteAllDialog(context);
-                          }
-                          break;
-                      }
-                    },
-                  )
-                ],
-              ),
-              body: SafeArea(
-                child: Column(
+                  ),
+                )
+              : Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Container(
@@ -237,9 +243,9 @@ class _SavesPageState extends State<SavesPage> {
                     )
                   ],
                 ),
-              ),
-            ),
-          );
+        ),
+      ),
+    );
   }
 
   Future<void> prepareSaveStringList() async {

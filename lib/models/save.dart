@@ -12,8 +12,9 @@ class Save {
     this.title = saveStringTitle[0];
     this.baslangicParasi = int.parse(saveStringTitle[1]);
     this.playerList = List<Player>.empty(growable: true);
-    String playerListString = saveStringTitle[2];
-    List<String> playerListName = playerListString.split(",");
+    String playerListString =
+        saveStringTitle[2].substring(1, saveStringTitle[2].length - 1);
+    List<String> playerListName = playerListString.split(", ");
     for (String playerString in playerListName) {
       Player player = Player.fromString(playerString);
       this.playerList.add(player);
