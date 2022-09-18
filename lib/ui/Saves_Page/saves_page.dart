@@ -270,8 +270,6 @@ class _SavesPageState extends State<SavesPage> {
           saveList.add(save);
         }
         counter++;
-        print("saveStringList.length: " + saveStringList.length.toString());
-        print("saveList.length: " + saveList.length.toString());
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("Kaydedilen oyun bulunamamaktadır"),

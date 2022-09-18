@@ -5,9 +5,8 @@ import 'package:game_atm/models/save.dart';
 import 'package:game_atm/services/validator.dart';
 import 'package:game_atm/ui/Game_Page/game_page.dart';
 import 'package:game_atm/ui/Saves_Page/saves_page.dart';
+import 'package:game_atm/ui/Settings_Page/settings_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../Settings_Page/settings_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,7 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int oyuncuSayisi = 2, oyuncuSayisiBitis = 100, baslangicParasi;
+  int oyuncuSayisi = 2, oyuncuSayisiBitis = 10, baslangicParasi;
 
   List<int> oyuncuSayisiList;
   List<String> oyuncuAdlariList = List<String>.empty(growable: true);
@@ -279,7 +278,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<int> oyuncuSayisiListOlustur() {
-    List<int> list = List.empty(growable: true);
+    List<int> list = [];
     for (int i = oyuncuSayisi; i <= oyuncuSayisiBitis; i++) {
       list.add(i);
     }
