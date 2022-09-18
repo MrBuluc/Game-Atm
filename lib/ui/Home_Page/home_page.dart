@@ -9,23 +9,26 @@ import 'package:game_atm/ui/Settings_Page/settings_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int oyuncuSayisi = 2, oyuncuSayisiBitis = 10, baslangicParasi;
+  int oyuncuSayisi = 2, oyuncuSayisiBitis = 10;
+  int? baslangicParasi;
 
-  List<int> oyuncuSayisiList;
-  List<String> oyuncuAdlariList = List<String>.empty(growable: true);
+  List<int>? oyuncuSayisiList;
+  List<String> oyuncuAdlariList = [];
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
-  double width, height;
+  double? width, height;
 
-  TextStyle headLineTextStyle;
+  TextStyle? headLineTextStyle;
 
   @override
   void initState() {
@@ -33,12 +36,20 @@ class _HomePageState extends State<HomePage> {
     oyuncuSayisiList = oyuncuSayisiListOlustur();
   }
 
+  List<int> oyuncuSayisiListOlustur() {
+    List<int> list = [];
+    for (int i = oyuncuSayisi; i <= oyuncuSayisiBitis; i++) {
+      list.add(i);
+    }
+    return list;
+  }
+
   @override
   Widget build(BuildContext context) {
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
     headLineTextStyle = TextStyle(
-        color: Theme.of(context).textTheme.headline1.color,
+        color: Theme.of(context).textTheme.headline1!.color,
         fontWeight: FontWeight.w600,
         fontSize: 30);
     return Scaffold(
@@ -46,7 +57,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).primaryColor,
         automaticallyImplyLeading: false,
-        title: Text(
+        title: const Text(
           "Game Atm",
           textAlign: TextAlign.center,
         ),
@@ -55,7 +66,7 @@ class _HomePageState extends State<HomePage> {
             color: Colors.white,
             elevation: 20,
             itemBuilder: (context) => [
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: "Ayarlar",
                 child: Text("Ayarlar"),
               )
@@ -73,7 +84,7 @@ class _HomePageState extends State<HomePage> {
         centerTitle: false,
         elevation: 4,
       ),
-      backgroundColor: Color(0xFFEFEFEF),
+      backgroundColor: const Color(0xFFEFEFEF),
       body: SingleChildScrollView(
         child: SafeArea(
           child: Column(
@@ -81,47 +92,47 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+                padding: const EdgeInsets.fromLTRB(10, 10, 0, 0),
                 child: Text(
                   "Yeni bir Oyun Ayarla",
                   style: headLineTextStyle,
                 ),
               ),
-              Padding(
+              const Padding(
                 padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                 child: Text(
                     "Oyuncu adlarını giriniz, başlangıç parasını seçiniz ve oluştura tıklayınız"),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Padding(
+                    const Padding(
                       padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                       child: Text("Oyuncu Sayısı"),
                     ),
                     Padding(
-                      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                      padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
                       child: DropdownButton<int>(
                         value: oyuncuSayisi,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w600,
                         ),
                         dropdownColor: Colors.white,
                         elevation: 2,
-                        items: oyuncuSayisiList
+                        items: oyuncuSayisiList!
                             .map<DropdownMenuItem<int>>((int value) {
                           return DropdownMenuItem<int>(
                             value: value,
                             child: Text(value.toString()),
                           );
                         }).toList(),
-                        onChanged: (int newValue) {
+                        onChanged: (int? newValue) {
                           setState(() {
-                            oyuncuSayisi = newValue;
+                            oyuncuSayisi = newValue!;
                           });
                         },
                       ),
@@ -134,7 +145,7 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     ListView.builder(
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       itemCount: oyuncuSayisi,
                       shrinkWrap: true,
                       itemBuilder: (context, i) {
@@ -142,12 +153,12 @@ class _HomePageState extends State<HomePage> {
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Padding(
-                              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
                               child: Text("Oyuncu ${i + 1}"),
                             ),
                             Expanded(
                                 child: Padding(
-                              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
                               child: TextFormField(
                                 initialValue: "Oyuncu ${i + 1}",
                                 decoration: InputDecoration(
@@ -159,10 +170,11 @@ class _HomePageState extends State<HomePage> {
                                         borderRadius: const BorderRadius.only(
                                             topLeft: Radius.circular(4.0),
                                             topRight: Radius.circular(4.0)))),
-                                style: TextStyle(fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
                                 validator: Validator.isimKontrol,
-                                onSaved: (String value) =>
-                                    oyuncuAdlariList.add(value),
+                                onSaved: (String? value) =>
+                                    oyuncuAdlariList.add(value!),
                               ),
                             )),
                           ],
@@ -172,18 +184,18 @@ class _HomePageState extends State<HomePage> {
                     Row(
                       mainAxisSize: MainAxisSize.max,
                       children: [
-                        Padding(
+                        const Padding(
                           padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
                           child: Text("Başlangıç Parası"),
                         ),
                         Expanded(
                             child: Padding(
-                          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
                           child: TextFormField(
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
                               hintText: "0",
-                              hintStyle: TextStyle(
+                              hintStyle: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.w500),
                               border: UnderlineInputBorder(
                                   borderSide: BorderSide(
@@ -193,11 +205,11 @@ class _HomePageState extends State<HomePage> {
                                       topLeft: Radius.circular(4.0),
                                       topRight: Radius.circular(4.0))),
                             ),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.w500),
                             validator: Validator.degerKontrol,
-                            onSaved: (String value) =>
-                                baslangicParasi = int.parse(value),
+                            onSaved: (String? value) =>
+                                baslangicParasi = int.parse(value!),
                           ),
                         ))
                       ],
@@ -206,14 +218,14 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(10, 30, 10, 30),
-                child: Container(
+                padding: const EdgeInsets.fromLTRB(10, 30, 10, 30),
+                child: SizedBox(
                   width: width,
                   height: 80,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         primary: Theme.of(context).primaryColor),
-                    child: Text(
+                    child: const Text(
                       "Oluştur",
                       style: TextStyle(color: Colors.white, fontSize: 30),
                     ),
@@ -223,13 +235,13 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-              Divider(
+              const Divider(
                 height: 1,
                 thickness: 1,
                 color: Colors.black,
               ),
               Padding(
-                padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+                padding: const EdgeInsets.fromLTRB(10, 10, 0, 0),
                 child: Text(
                   "Önceki Oyunu Yükle",
                   style: headLineTextStyle,
@@ -240,11 +252,11 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Padding(
-                    padding: EdgeInsets.fromLTRB(10, 20, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(10, 20, 0, 0),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           primary: Theme.of(context).primaryColor),
-                      child: Text(
+                      child: const Text(
                         "    Önceki\nOyunu Yükle",
                         style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
@@ -254,11 +266,11 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(10, 20, 10, 0),
+                    padding: const EdgeInsets.fromLTRB(10, 20, 10, 0),
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           primary: Theme.of(context).primaryColor),
-                      child: Text(
+                      child: const Text(
                         "Kaydedilmiş\nOyunları Gör",
                         style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
@@ -277,26 +289,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  List<int> oyuncuSayisiListOlustur() {
-    List<int> list = [];
-    for (int i = oyuncuSayisi; i <= oyuncuSayisiBitis; i++) {
-      list.add(i);
-    }
-    return list;
-  }
-
   Future<void> olustur() async {
-    if (formKey.currentState.validate()) {
-      formKey.currentState.save();
+    if (formKey.currentState!.validate()) {
+      formKey.currentState!.save();
 
       List<Player> playerList = preparePlayerList();
 
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => GamePage(
                 playerList: playerList,
-                baslangicParasi: baslangicParasi,
+                baslangicParasi: baslangicParasi!,
               )));
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Oyun Oluşturuldu"),
         duration: Duration(seconds: 2),
       ));
@@ -316,18 +320,18 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> loadLastGame() async {
     final SharedPreferences prefs = await _prefs;
-    List<String> saveStringList = prefs.getStringList("saveStringList");
+    List<String>? saveStringList = prefs.getStringList("saveStringList");
 
     if (saveStringList != null) {
       Save save = Save.fromString(saveStringList.last);
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => GamePage(
-                playerList: save.playerList,
-                baslangicParasi: save.baslangicParasi,
+                playerList: save.playerList!,
+                baslangicParasi: save.baslangicParasi!,
                 index: saveStringList.length - 1,
               )));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Son kaydettiğiniz oyun bulunamamaktadır"),
         duration: Duration(seconds: 2),
       ));

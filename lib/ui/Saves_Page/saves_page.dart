@@ -8,22 +8,25 @@ import 'package:game_atm/ui/Game_Page/game_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SavesPage extends StatefulWidget {
+  const SavesPage({Key? key}) : super(key: key);
+
   @override
   _SavesPageState createState() => _SavesPageState();
 }
 
 class _SavesPageState extends State<SavesPage> {
-  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   List<Save> saveList = List<Save>.empty(growable: true);
 
   TextStyle adlarVeParaTextStyle =
-          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      textButtonTextStyle;
+      const TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+  TextStyle? textButtonTextStyle;
 
-  Size size;
+  late Size size;
 
-  EdgeInsets adlarVeParaPadding = EdgeInsets.only(left: 10, top: 10, right: 10);
+  EdgeInsets adlarVeParaPadding =
+      const EdgeInsets.only(left: 10, top: 10, right: 10);
 
   MainAxisAlignment adlarVeParaMainAxisAlignment =
       MainAxisAlignment.spaceBetween;
@@ -46,7 +49,7 @@ class _SavesPageState extends State<SavesPage> {
           automaticallyImplyLeading: true,
           centerTitle: false,
           elevation: 4,
-          title: Text(
+          title: const Text(
             "Oyun Yükle",
             style: TextStyle(color: Colors.white, fontSize: 18),
           ),
@@ -55,7 +58,7 @@ class _SavesPageState extends State<SavesPage> {
               color: Colors.white,
               elevation: 20,
               itemBuilder: (context) => [
-                PopupMenuItem(
+                const PopupMenuItem(
                   value: "Delete",
                   child: Text("Hepsini sil"),
                 )
@@ -64,7 +67,7 @@ class _SavesPageState extends State<SavesPage> {
                 switch (value) {
                   case "Delete":
                     if (saveList.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content:
                             Text("Silinecek bir oyun kaydınız bulunmamaktadır"),
                         duration: Duration(seconds: 2),
@@ -86,7 +89,7 @@ class _SavesPageState extends State<SavesPage> {
                   padding: const EdgeInsets.only(top: 10, left: 10),
                   child: Column(
                     children: [
-                      Text(
+                      const Text(
                         "Herhangi bir kaydedilmiş oyununuz bulunmamaktadır!!!\n"
                         "Yeni bir oyun oluşturmayı deneyin.",
                         style: TextStyle(fontSize: 20),
@@ -94,7 +97,7 @@ class _SavesPageState extends State<SavesPage> {
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             primary: Theme.of(context).primaryColor),
-                        child: Text(
+                        child: const Text(
                           "Yeni Oyun",
                           style: TextStyle(color: Colors.white, fontSize: 20),
                         ),
@@ -111,8 +114,9 @@ class _SavesPageState extends State<SavesPage> {
                       Container(
                         width: size.width,
                         height: 35,
-                        decoration: BoxDecoration(color: Color(0xFF8BC34A)),
-                        child: Padding(
+                        decoration:
+                            const BoxDecoration(color: Color(0xFF8BC34A)),
+                        child: const Padding(
                           padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
                           child: Text(
                             "Kaydedilen Oyunlar",
@@ -125,7 +129,7 @@ class _SavesPageState extends State<SavesPage> {
                         ),
                       ),
                       ListView.builder(
-                        physics: NeverScrollableScrollPhysics(),
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: saveList.length,
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
@@ -146,7 +150,7 @@ class _SavesPageState extends State<SavesPage> {
                                   },
                                   background: Container(
                                     color: Colors.red,
-                                    child: Center(
+                                    child: const Center(
                                       child: Text(
                                         "Kaldır",
                                         style: TextStyle(fontSize: 30),
@@ -159,11 +163,11 @@ class _SavesPageState extends State<SavesPage> {
                                     children: [
                                       GestureDetector(
                                         child: Padding(
-                                          padding:
-                                              EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                          padding: const EdgeInsets.fromLTRB(
+                                              0, 10, 0, 0),
                                           child: Text(
-                                            saveList[index].title,
-                                            style: TextStyle(
+                                            saveList[index].title!,
+                                            style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold),
                                           ),
@@ -195,14 +199,14 @@ class _SavesPageState extends State<SavesPage> {
                                             ),
                                             ListView.builder(
                                               physics:
-                                                  NeverScrollableScrollPhysics(),
+                                                  const NeverScrollableScrollPhysics(),
                                               shrinkWrap: true,
                                               itemCount: saveList[index]
-                                                  .playerList
+                                                  .playerList!
                                                   .length,
                                               itemBuilder: (context, index1) {
                                                 List<Player> playerList =
-                                                    saveList[index].playerList;
+                                                    saveList[index].playerList!;
 
                                                 return Padding(
                                                   padding: adlarVeParaPadding,
@@ -213,7 +217,7 @@ class _SavesPageState extends State<SavesPage> {
                                                         adlarVeParaMainAxisAlignment,
                                                     children: [
                                                       Text(playerList[index1]
-                                                          .name),
+                                                          .name!),
                                                       Text(playerList[index1]
                                                           .money
                                                           .toString())
@@ -232,15 +236,15 @@ class _SavesPageState extends State<SavesPage> {
                                                       GamePage(
                                                         playerList:
                                                             saveList[index]
-                                                                .playerList,
+                                                                .playerList!,
                                                         baslangicParasi:
                                                             saveList[index]
-                                                                .baslangicParasi,
+                                                                .baslangicParasi!,
                                                         index: index,
                                                       )));
                                         },
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         height: 10,
                                       )
                                     ],
@@ -263,7 +267,7 @@ class _SavesPageState extends State<SavesPage> {
     if (counter == 0) {
       saveList.clear();
       final SharedPreferences prefs = await _prefs;
-      List<String> saveStringList = prefs.getStringList("saveStringList");
+      List<String>? saveStringList = prefs.getStringList("saveStringList");
       if (saveStringList != null) {
         for (String saveString in saveStringList) {
           Save save = Save.fromString(saveString);
@@ -271,7 +275,7 @@ class _SavesPageState extends State<SavesPage> {
         }
         counter++;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Kaydedilen oyun bulunamamaktadır"),
           duration: Duration(seconds: 1),
         ));
@@ -281,7 +285,7 @@ class _SavesPageState extends State<SavesPage> {
 
   Future<void> updateSaveStringList() async {
     final SharedPreferences prefs = await _prefs;
-    List<String> saveStringList = List<String>.empty(growable: true);
+    List<String> saveStringList = [];
     for (Save save in saveList) {
       saveStringList.add(save.toString());
     }
@@ -293,13 +297,13 @@ class _SavesPageState extends State<SavesPage> {
         context: context,
         builder: (context) {
           return SimpleDialog(
-            title: Text("Hepsini Silmek?"),
+            title: const Text("Hepsini Silmek?"),
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 24),
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       "Tüm kaydedilen oyunları silmek istediğinize emin misiniz?\n"
                       "Bu işlem geri alınamaz",
                       style: TextStyle(fontSize: 20),
@@ -347,24 +351,24 @@ class _SavesPageState extends State<SavesPage> {
   void editTitleDialog(BuildContext context, int index) {
     GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-    String saveTitle;
+    String? saveTitle;
 
     showDialog(
         context: context,
         builder: (context) {
           return SimpleDialog(
-            title: Text("Başlığı Düzenle"),
+            title: const Text("Başlığı Düzenle"),
             children: [
               Form(
                 key: formKey,
                 child: Padding(
-                  padding: EdgeInsets.only(left: 10),
+                  padding: const EdgeInsets.only(left: 10),
                   child: Column(
                     children: [
                       TextFormField(
                         initialValue: saveList[index].title,
                         validator: Validator.isimKontrol,
-                        onSaved: (String value) => saveTitle = value,
+                        onSaved: (String? value) => saveTitle = value!,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -377,7 +381,7 @@ class _SavesPageState extends State<SavesPage> {
                             onPressed: () {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(
+                                  .showSnackBar(const SnackBar(
                                 content: Text("İptal edildi"),
                                 duration: Duration(seconds: 1),
                               ));
@@ -389,8 +393,8 @@ class _SavesPageState extends State<SavesPage> {
                               style: textButtonTextStyle,
                             ),
                             onPressed: () {
-                              if (formKey.currentState.validate()) {
-                                formKey.currentState.save();
+                              if (formKey.currentState!.validate()) {
+                                formKey.currentState!.save();
                                 setState(() {
                                   saveList[index].title = saveTitle;
                                 });
@@ -399,7 +403,7 @@ class _SavesPageState extends State<SavesPage> {
                                     .showSnackBar(SnackBar(
                                   content: Text(
                                       "Başlık $saveTitle olarak değiştirildi"),
-                                  duration: Duration(seconds: 1),
+                                  duration: const Duration(seconds: 1),
                                 ));
                               }
                             },
