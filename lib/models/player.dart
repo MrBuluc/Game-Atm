@@ -17,7 +17,7 @@ class Player {
   }
 
   void cikar(int value) {
-    money -= value;
+    money = money! < value ? 0 : money! - value;
   }
 
   void transfer(Player player2, int value) {
