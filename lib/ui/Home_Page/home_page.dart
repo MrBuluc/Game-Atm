@@ -322,7 +322,7 @@ class _HomePageState extends State<HomePage> {
     final SharedPreferences prefs = await _prefs;
     List<String>? saveStringList = prefs.getStringList("saveStringList");
 
-    if (saveStringList != null) {
+    if (saveStringList!.isNotEmpty) {
       Save save = Save.fromString(saveStringList.last);
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => GamePage(
